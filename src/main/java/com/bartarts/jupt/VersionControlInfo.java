@@ -1,11 +1,14 @@
 package com.bartarts.jupt;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Comparator;
 
 /**
  * Adnotacja dla aktualizatora.
  * Klasy nieoznaczone tą adnotacją nie mogą podlegać kontroli wersji.
  */
+@Retention(RetentionPolicy.RUNTIME)
 public @interface VersionControlInfo {
     /**
      * Lancuch znakow oznaczajacy wersje

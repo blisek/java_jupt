@@ -17,8 +17,17 @@ public class VersionControlTest {
     @Test
     public void testConstructFromClassList() {
         vc = new VersionControl(new UpdateInfoProviderMock(), Arrays.asList(TestClass1.class, TestClass2.class, TestClass3.class));
-
-        assertArrayEquals(expectedClasses, vc.getClassesUnderVersionControl().toArray(new Class<?>[expectedClasses.length]));
+        Class<?>[] classes = vc.getClassesUnderVersionControl().toArray(new Class<?>[expectedClasses.length]);
+        assertEquals(2, classes.length);
+        for(Class c : classes)
+            System.out.println(c.getCanonicalName());
+        Arrays.sort(classes, new Comparator<Class<?>>() {
+            @Override
+            public int compare(Class<?> o1, Class<?> o2) {
+                return o1.getCanonicalName().compareTo(o2.getCanonicalName());
+            }
+        });
+        assertArrayEquals(expectedClasses, classes);
     }
 
     @Test
@@ -31,6 +40,7 @@ public class VersionControlTest {
                 return o1.getCanonicalName().compareTo(o2.getCanonicalName());
             }
         });
+        assertEquals(2, classes.length);
         assertArrayEquals(expectedClasses, classes);
     }
 

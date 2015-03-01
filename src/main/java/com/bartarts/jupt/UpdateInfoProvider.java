@@ -10,15 +10,39 @@ import java.util.stream.Collectors;
  */
 public abstract class UpdateInfoProvider {
 
+    private Map<String, String> requestBodyParameters = new HashMap<>();
+
     public abstract List<UpdateInfo> getList();
 
+    /**
+     * Returns Map where each key is name of class (including package name) and UpdateInfo struct as corresponding value.
+     * @return above described Map.
+     */
     public final Map<String, UpdateInfo> getMap() {
         List<UpdateInfo> list = getList();
-//        Map<String, UpdateInfo> map = new HashMap<>(list.size());
-//        for(UpdateInfo ui : list)
-//            map.put(ui.className, ui);
-//        return map;
         return list.stream().collect(Collectors.toMap(updateInfo -> updateInfo.className, updateInfo -> updateInfo));
+    }
+
+    /**
+     * Returns mutable Map of request body parameters. Example: http://www.site.com/index.php?key1=value1&key2=value2,
+     * where pairs (key1, value1) and (key2, value2) are from requestBodyParameters Map.
+     * @return Map
+     */
+    public Map<String, String> requestBodyParametersMap() {
+        return requestBodyParameters;
+    }
+
+    private String joinParameters() {
+        if(requestBodyParameters.isEmpty())
+            return new String();
+        StringBuilder sb = new StringBuilder(requestBodyParameters.size());
+        final boolean[] firstParameter = {true};
+        requestBodyParameters.forEach((key,val) -> {
+            if(firstParameter[0]) firstParameter[0] = false;
+            else sb.append("&");
+            sb.append(String.join("=", key, val));
+        });
+        return sb.toString();
     }
 
 }
