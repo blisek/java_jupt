@@ -46,4 +46,20 @@ public class DefaultVersionComparatorTest {
         assertTrue(comp.compare(v2, v1) == 0);
     }
 
+    @Test
+    public void testCompareDifferentLengthVer() {
+        String v1 = "1.0", v2 = "1.0.2";
+
+        assertTrue(comp.compare(v1, v2) > 0);
+        assertTrue(comp.compare(v2, v1) < 0);
+    }
+
+    @Test
+    public void testCompareDifferentLengthVer2() {
+        String v1 = "1.2.3.4", v2 = "1.3";
+
+        assertTrue(comp.compare(v1, v2) > 0);
+        assertTrue(comp.compare(v2, v1) < 0);
+    }
+
 }

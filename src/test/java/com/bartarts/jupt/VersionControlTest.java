@@ -3,9 +3,9 @@ package com.bartarts.jupt;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Created by bartek on 01.03.15.
@@ -44,11 +44,60 @@ public class VersionControlTest {
         assertArrayEquals(expectedClasses, classes);
     }
 
+    @Test
+    public void testListAllNewerClasses() {
+        UpdateInfo[] updateInfos = {
+                new UpdateInfoMock(TestClass1.class.getCanonicalName(), "", "1.0.0", ""),
+                new UpdateInfoMock(TestClass3.class.getCanonicalName(), "", "1.6", "")
+        };
+
+        UpdateInfo[] expected = { updateInfos[1] };
+        vc = new VersionControl(new UpdateInfoProviderMock(updateInfos), Arrays.asList(TestClass1.class, TestClass2.class, TestClass3.class));
+        UpdateInfo[] recieved = vc.listAllNewerClasses().toArray(new UpdateInfo[1]);
+
+        assertTrue(recieved.length == 1);
+        assertEquals(expected[0].className, recieved[0].className);
+    }
+
+    @Test
+    public void testListAllAvailableClasses() {
+        UpdateInfo[] updateInfos = {
+                new UpdateInfoMock(TestClass1.class.getCanonicalName(), "", "1.0.0", ""),
+                new UpdateInfoMock(TestClass3.class.getCanonicalName(), "", "1.6", "")
+        };
+        Set<String> classes = new HashSet<>();
+        Arrays.stream(updateInfos).forEach(ui -> classes.add(ui.className));
+        vc = new VersionControl(new UpdateInfoProviderMock(updateInfos), Arrays.asList(TestClass1.class, TestClass2.class, TestClass3.class));
+        vc.listAllAvailableClasses().stream().forEach(ui -> classes.remove(ui.className));
+        assertTrue(classes.size() == 0);
+    }
+
 }
 
 class UpdateInfoProviderMock extends UpdateInfoProvider {
+    private List<UpdateInfo> updateInfoList;
+
+    public UpdateInfoProviderMock() {
+    }
+
+    public UpdateInfoProviderMock(UpdateInfo... updateInfos) {
+        updateInfoList = new ArrayList<>(Arrays.<UpdateInfo>asList(updateInfos));
+    }
+
     @Override
     public List<UpdateInfo> getList() {
+        return updateInfoList;
+    }
+}
+
+class UpdateInfoMock extends UpdateInfo {
+
+    public UpdateInfoMock(String className, String classPackage, String newVersion, String newVersionDescription) {
+        super(className, classPackage, newVersion, newVersionDescription);
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
         return null;
     }
 }

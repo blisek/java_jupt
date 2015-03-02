@@ -23,24 +23,37 @@ public class DefaultVersionComparator implements Comparator<String> {
         String[] versionString2 = o2.split(regex);
         if(hasEmptyStrings(versionString2))
             throw new VersionFormatException("Incorrect version: " + o2);
+//
+//        if(versionString1.length < versionString2.length)
+//            return 1;
+//        else if(versionString1.length > versionString2.length)
+//            return -1;
 
-        if(versionString1.length < versionString2.length)
-            return 1;
-        else if(versionString1.length > versionString2.length)
-            return -1;
-
+        int outputCode = 0;
         try {
-            for (int i = 0; i < versionString1.length; ++i) {
+            for (int i = 0; (i < versionString1.length) && (i < versionString2.length); ++i) {
                 int num1 = Integer.parseInt(versionString1[i]);
                 int num2 = Integer.parseInt(versionString2[i]);
 
-                if (num1 < num2) return 1;
-                else if (num1 > num2) return -1;
+                if (num1 < num2) {
+                    outputCode = 1;
+                    break;
+                } else if (num1 > num2) {
+                    outputCode = -1;
+                    break;
+                }
             }
         } catch(NumberFormatException ex) {
             throw new VersionFormatException(ex.getMessage());
         }
-        return 0;
+
+        if(versionString1.length < versionString2.length && outputCode == 0)
+            return 1;
+        else if(versionString1.length > versionString2.length && outputCode == 0)
+            return -1;
+        else
+            return outputCode;
+
     }
 
     private static boolean hasEmptyStrings(String[] array) {
