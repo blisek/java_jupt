@@ -1,11 +1,13 @@
 package com.bartarts.jupt;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 /**
  * Struktura zawierajaca informacje o wersji pliku na serwerze.
  */
-public class UpdateInfo {
+public abstract class UpdateInfo {
     /**
      * Pelna nazwa klasy (z nazwa pakietu)
      */
@@ -22,17 +24,12 @@ public class UpdateInfo {
      * Opis nowej wersji
      */
     String newVersionDescription;
-    /**
-     * Sciezka do pliku z nowa wersja
-     */
-    URI link;
 
-    public UpdateInfo(String className, String classPackage, String newVersion, String newVersionDescription, URI link) {
+    public UpdateInfo(String className, String classPackage, String newVersion, String newVersionDescription) {
         this.className = className;
         this.classPackage = classPackage;
         this.newVersion = newVersion;
         this.newVersionDescription = newVersionDescription;
-        this.link = link;
     }
 
     public String getClassName() {
@@ -51,7 +48,5 @@ public class UpdateInfo {
         return newVersionDescription;
     }
 
-    public URI getLink() {
-        return link;
-    }
+    public abstract InputStream getInputStream() throws IOException;
 }
