@@ -1,7 +1,11 @@
 package com.bartarts.jupt;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +56,24 @@ public class Updater {
                 String packagePath = ui.classPackage.replace('.', '/');
                 File packageDir = new File(workingDir, packagePath);
                 packageDir.mkdirs();
+                String classFile = ui.className.substring(ui.className.lastIndexOf('.')) + ".class";
+                File classFileFile = new File(packageDir, classFile);
+                if(classFileFile.exists()) {
+                    Thread thread = wrapUpdateInfoToThread(ui, classFileFile);
+                    thList.add(thread);
+                    if(registerHooks)
+                        Runtime.getRuntime().addShutdownHook(thread);
+                } else {
+                    FileOutputStream fos = null;
+                    try {
+                        fos = new FileOutputStream(classFileFile);
+                        ReadableByteChannel rbc = Channels.newChannel(ui.getInputStream());
+                        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                    } finally {
+                        if(fos != null)
+                            fos.close();
+                    }
+                }
                 // TODO pobieranie
             } catch (Exception ex) {
                 failureList.add(ui);
@@ -62,29 +84,28 @@ public class Updater {
         return false;
     }
 
-    private Thread wrapUpdateInfoToThread(final UpdateInfo updateInfo) {
-        if(updateInfo == null)
+    private Thread wrapUpdateInfoToThread(final UpdateInfo updateInfo, final File destinationFile) throws IOException, SecurityException{
+        if(updateInfo == null || destinationFile == null)
             throw new NullPointerException();
+        final File tempFile = File.createTempFile(updateInfo.className, ".tmp");
+        ReadableByteChannel rbc = Channels.newChannel(updateInfo.getInputStream());
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        fos.close();
         return new Thread(() -> {
+            //FileOutputStream fos = null;
+            try {
+                if (destinationFile.exists()) destinationFile.delete();
+                destinationFile.createNewFile();
+                ReadableByteChannel byteChannel = Channels.newChannel(new FileInputStream(tempFile));
+                FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);
+                fileOutputStream.getChannel().transferFrom(byteChannel, 0, tempFile.length() + 1);
+                fileOutputStream.close();
+                byteChannel.close();
+                tempFile.delete();
+            } catch (Exception ex) {
 
+            }
         });
     }
 }
-
-/* Na pozniej
-File workingDir = new File(System.getProperty("user.dir"));
-		String[] cat = { "a/b", "b/a", "a/c", "c/a", "b/c", "c/b" };
-		String[] files = { "file1.txt", "file2.txt" };
-		for(String path : cat) {
-			File subdirs = new File(workingDir, path);
-			subdirs.mkdirs();
-			for(String f : files) {
-				File fi = new File(subdirs, f);
-				try {
-					fi.createNewFile();
-				} catch(Exception e) {
-					System.err.println(e.getMessage());
-				}
-			}
-		}
- */

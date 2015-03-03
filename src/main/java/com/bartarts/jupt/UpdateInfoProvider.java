@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
  */
 public abstract class UpdateInfoProvider {
 
+    public static int NUM_OF_ATTEMPTS = 3;
+
     private Map<String, String> requestBodyParameters = new HashMap<>();
 
     public abstract List<UpdateInfo> getList();
@@ -32,7 +34,7 @@ public abstract class UpdateInfoProvider {
         return requestBodyParameters;
     }
 
-    private String joinParameters() {
+    protected String joinParameters() {
         if(requestBodyParameters.isEmpty())
             return new String();
         StringBuilder sb = new StringBuilder(requestBodyParameters.size());
