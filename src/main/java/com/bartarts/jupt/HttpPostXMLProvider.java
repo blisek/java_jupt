@@ -1,5 +1,6 @@
 package com.bartarts.jupt;
 
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -8,24 +9,25 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * Created by bartek on 01.03.15.
+ * Created by bartek on 03.03.15.
  */
-public class HttpGetXMLProvider extends UpdateInfoProvider {
+public class HttpPostXMLProvider extends UpdateInfoProvider {
+
     protected URL url;
     protected List<UpdateInfo> updateInfoList;
     protected static final String requestDelimiter = "&";
 
-    public HttpGetXMLProvider(URL address) {
+    public HttpPostXMLProvider(URL address) {
         if(address == null)
             throw new NullPointerException();
         url = address;
     }
 
-    public HttpGetXMLProvider(String address) throws MalformedURLException {
+    public HttpPostXMLProvider(String address) throws MalformedURLException {
         this(new URL(address));
     }
 
-    public HttpGetXMLProvider(URI address) throws MalformedURLException {
+    public HttpPostXMLProvider(URI address) throws MalformedURLException {
         this(address.toURL());
     }
 
@@ -36,10 +38,15 @@ public class HttpGetXMLProvider extends UpdateInfoProvider {
         for(int i = 1; i <= NUM_OF_ATTEMPTS; ++i) {
             try {
                 String params = joinParameters(requestDelimiter);
-                URL allIn = params.isEmpty() ? url : new URL(String.join("?", url.toExternalForm(), params));
-                HttpURLConnection con = (HttpURLConnection) allIn.openConnection();
-                con.setRequestMethod("GET");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("POST");
                 con.setRequestProperty("User-Agent", "Mozilla/5.0");
+                con.setRequestProperty("Accept-Language", "en-US,en,q=0.5");
+                con.setDoOutput(true);
+                DataOutputStream dos = new DataOutputStream(con.getOutputStream());
+                dos.writeBytes(params);
+                dos.flush();
+                dos.close();
                 int response = con.getResponseCode();
                 if (response != 200) return;
                 InputStream inputStream = con.getInputStream();
@@ -56,9 +63,6 @@ public class HttpGetXMLProvider extends UpdateInfoProvider {
 
     @Override
     public List<UpdateInfo> getList() {
-        if(updateInfoList != null)
-            return updateInfoList;
-        reloadList();
-        return updateInfoList;
+        return null;
     }
 }

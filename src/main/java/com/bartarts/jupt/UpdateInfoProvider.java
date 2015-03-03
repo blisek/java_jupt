@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  */
 public abstract class UpdateInfoProvider {
 
-    public static int NUM_OF_ATTEMPTS = 3;
+    public static int NUM_OF_ATTEMPTS = 5;
 
     private Map<String, String> requestBodyParameters = new HashMap<>();
 
@@ -34,14 +34,14 @@ public abstract class UpdateInfoProvider {
         return requestBodyParameters;
     }
 
-    protected String joinParameters() {
+    protected String joinParameters(String delimiter) {
         if(requestBodyParameters.isEmpty())
             return new String();
         StringBuilder sb = new StringBuilder(requestBodyParameters.size());
         final boolean[] firstParameter = {true};
         requestBodyParameters.forEach((key,val) -> {
             if(firstParameter[0]) firstParameter[0] = false;
-            else sb.append("&");
+            else sb.append(delimiter);
             sb.append(String.join("=", key, val));
         });
         return sb.toString();
